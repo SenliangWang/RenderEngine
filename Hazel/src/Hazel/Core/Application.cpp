@@ -11,6 +11,6 @@ namespace Hazel  {
 	}
 
 	void Application::Run() {
-
+		std::cout << "Application :: Run" << std::endl;
 	}
 }

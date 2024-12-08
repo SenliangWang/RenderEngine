@@ -12,13 +12,6 @@ if(WIN32)
     add_definitions(-DHZ_PLATFORM_WINDOWS)
 endif()
 
-# 编译选项
-if(MSVC)
-    add_compile_options(/W4 /WX)
-else()
-    add_compile_options(-Wall -Wextra -Wpedantic -Werror)
-endif()
-
 # 添加子目录
 add_subdirectory(Hazel)
 add_subdirectory(Sandbox)
