@@ -12,6 +12,13 @@ if(WIN32)
     add_definitions(-DHZ_PLATFORM_WINDOWS)
 endif()
 
+# 启用断言
+option(HZ_ENABLE_ASSERTS "Enable assertions" ON)
+
+if(HZ_ENABLE_ASSERTS)
+    add_definitions(-DHZ_ENABLE_ASSERTS)
+endif()
+
 # 添加子目录
 add_subdirectory(Hazel)
 add_subdirectory(Sandbox)
