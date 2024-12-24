@@ -1,5 +1,6 @@
 #include "hzpch.h"
 #include "WindowsWindow.h"
+#include "Hazel/Core/Log.h"
 
 namespace Hazel {
 	static bool s_GLFWInitialized = false;
@@ -53,10 +54,12 @@ namespace Hazel {
 
 	void WindowsWindow::SetVSync(bool enabled) 
 	{
-		if (enabled) {
+		if (enabled) 
+		{
 			glfwSwapInterval(1);
 		}
-		else {
+		else 
+		{
 			glfwSwapInterval(0);
 		}
 		m_Data.VSync = enabled;
