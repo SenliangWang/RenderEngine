@@ -5,6 +5,7 @@ set(CORE_HEADERS
     src/Hazel/Core/Events/Event.h
     src/Hazel/Core/Events/KeyEvent.h
     src/Hazel/Core/Events/MouseEvent.h
+    src/Hazel/Core/Events/ApplicationEvent.h
     src/Hazel/Core/Window.h
 )
 
