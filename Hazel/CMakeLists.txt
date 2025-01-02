@@ -69,6 +69,12 @@ target_link_libraries(Hazel PUBLIC glfw)
 find_package(OpenGL REQUIRED)
 target_link_libraries(Hazel PUBLIC OpenGL::GL)
 
+# 添加glad库
+add_subdirectory(vendor/glad)
+
+# 链接glad库
+target_link_libraries(Hazel PUBLIC glad)
+
 # 使用source_group组织文件
 source_group("source\\core"     FILES ${CORE_HEADERS} ${CORE_SOURCES})
 source_group("source\\platform" FILES ${PLATFORM_SOURCES})
