@@ -1,18 +1,26 @@
 set(CORE_HEADERS
     src/Hazel/Core/Application.h
     src/Hazel/Core/Log.h
+
     src/Hazel/Core/KeyCodes.h
     src/Hazel/Core/Events/Event.h
     src/Hazel/Core/Events/KeyEvent.h
     src/Hazel/Core/Events/MouseEvent.h
     src/Hazel/Core/Events/ApplicationEvent.h
+
     src/Hazel/Core/Window.h
+    src/Hazel/Core/Layer.h
+    src/Hazel/Core/LayerStack.h
 )
 
 set(CORE_SOURCES
     src/Hazel/Core/Application.cpp
     src/Hazel/Core/Log.cpp
+
     src/Hazel/Core/Window.cpp
+    src/Hazel/Core/Layer.cpp
+    src/Hazel/Core/LayerStack.cpp
+
 )
 
 set(PLATFORM_SOURCES
