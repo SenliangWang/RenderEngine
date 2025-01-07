@@ -1,5 +1,8 @@
 #include "hzpch.h"
+#include "glad/glad.h"
+
 #include "WindowsWindow.h"
+
 #include "Hazel/Core/Log.h"
 #include "Hazel/Core/Events/Event.h"
 #include "Hazel/Core/Events/KeyEvent.h"
@@ -44,6 +47,11 @@ namespace Hazel {
 		glfwSetWindowUserPointer(m_Window, &m_Data);
 		SetVSync(true);
 
+		if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) 
+		{
+			HZ_CORE_ERROR("Failed to initialize GLAD");
+			return;
+		}
 
 		// Set GLFW callbacks
 		glfwSetWindowSizeCallback(m_Window, [](GLFWwindow* window, int width, int height)
