@@ -75,6 +75,12 @@ add_subdirectory(vendor/glad)
 # 链接glad库
 target_link_libraries(Hazel PUBLIC glad)
 
+# 添加ImGui库
+add_subdirectory(vendor/imgui)
+
+# 链接ImGui库
+target_link_libraries(Hazel PUBLIC imgui)
+
 # 使用source_group组织文件
 source_group("source\\core"     FILES ${CORE_HEADERS} ${CORE_SOURCES})
 source_group("source\\platform" FILES ${PLATFORM_SOURCES})
