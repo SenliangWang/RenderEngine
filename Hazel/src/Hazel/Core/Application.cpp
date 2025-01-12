@@ -6,10 +6,13 @@
 
 namespace Hazel  
 {
+	Application* Application::s_Instance = nullptr;
+
 	#define BIND_EVENT_FN(x) std::bind(&Application::x, this, std::placeholders::_1)
 
 	Application::Application() 
 	{
+		s_Instance = this;
 		m_Window = std::unique_ptr<Window>(Window::Create());
 		m_Window->SetEventCallback(BIND_EVENT_FN(OnEvent));
 	}
@@ -53,11 +56,13 @@ namespace Hazel
 	void Application::PushLayer(Layer* pLayer)
 	{
 		m_LayerStack.PushLayer(pLayer);
+		pLayer->OnAttach();
 	}
 
 	void Application::PushOverLayer(Layer* pLayer)
 	{
 		m_LayerStack.PushOverlay(pLayer);
+		pLayer->OnAttach();
 	}
 
 	bool Application::OnWindowClose(WindowCloseEvent& e)

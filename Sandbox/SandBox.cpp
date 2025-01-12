@@ -3,11 +3,13 @@
 class Sandbox : public Hazel::Application 
 {
 public:
-	Sandbox() {
-
+	Sandbox() 
+	{
+		PushOverLayer(new Hazel::ImGuiLayer());
 	}
 
-	~Sandbox() {  
+	~Sandbox() 
+	{  
 
 	}
 };

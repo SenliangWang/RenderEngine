@@ -1,6 +1,7 @@
 set(CORE_HEADERS
     src/Hazel/Core/Application.h
     src/Hazel/Core/Log.h
+    src/Hazel/Core/Base.h
 
     src/Hazel/Core/KeyCodes.h
     src/Hazel/Core/Events/Event.h
@@ -10,7 +11,8 @@ set(CORE_HEADERS
 
     src/Hazel/Core/Window.h
     src/Hazel/Core/Layer.h
-    src/Hazel/Core/LayerStack.h
+    src/Hazel/Core/ImGuiLayer.h
+    src/Hazel/Core/ImGuiLayer.cpp
 )
 
 set(CORE_SOURCES
@@ -28,6 +30,11 @@ set(PLATFORM_SOURCES
     src/Hazel/Platform/WindowsWindow.cpp
 )
 
+set(PLATFORM_OPENGL_SOURCES
+    src/Hazel/Platform/OpenGL/ImGuiOpenGLRenderer.h
+    src/Hazel/Platform/OpenGL/ImGuiOpenGLRenderer.cpp
+)
+
 set(MISC_FILES
     src/Hazel/EntryPoint.h
     Hazel.h
@@ -40,6 +47,7 @@ add_library(Hazel STATIC
     ${CORE_HEADERS}
     ${CORE_SOURCES}
     ${PLATFORM_SOURCES}
+    ${PLATFORM_OPENGL_SOURCES}
     ${MISC_FILES}
 )
 
@@ -84,4 +92,5 @@ target_link_libraries(Hazel PUBLIC imgui)
 # 使用source_group组织文件
 source_group("source\\core"     FILES ${CORE_HEADERS} ${CORE_SOURCES})
 source_group("source\\platform" FILES ${PLATFORM_SOURCES})
+source_group("source\\platform\\opengl" FILES ${PLATFORM_OPENGL_SOURCES})
 source_group("source"           FILES ${MISC_FILES})
