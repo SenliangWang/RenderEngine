@@ -1,3 +1,4 @@
+## Core
 set(CORE_HEADERS
     src/Hazel/Core/Application.h
     src/Hazel/Core/Log.h
@@ -25,6 +26,7 @@ set(CORE_SOURCES
 
 )
 
+## Platform
 set(PLATFORM_SOURCES
     src/Hazel/Platform/WindowsWindow.h
     src/Hazel/Platform/WindowsWindow.cpp
@@ -33,8 +35,18 @@ set(PLATFORM_SOURCES
 set(PLATFORM_OPENGL_SOURCES
     src/Hazel/Platform/OpenGL/ImGuiOpenGLRenderer.h
     src/Hazel/Platform/OpenGL/ImGuiOpenGLRenderer.cpp
+    
+    src/Hazel/Platform/OpenGL/OpenGLContext.h
+    src/Hazel/Platform/OpenGL/OpenGLContext.cpp
 )
 
+## Renderer
+set(RENDERER_SOURCES
+    src/Hazel/Renderer/GraphicsContext.h
+)
+
+
+## Misc
 set(MISC_FILES
     src/Hazel/EntryPoint.h
     Hazel.h
@@ -49,6 +61,7 @@ add_library(Hazel STATIC
     ${PLATFORM_SOURCES}
     ${PLATFORM_OPENGL_SOURCES}
     ${MISC_FILES}
+    ${RENDERER_SOURCES}
 )
 
 # 设置预编译头
@@ -93,4 +106,5 @@ target_link_libraries(Hazel PUBLIC imgui)
 source_group("source\\core"     FILES ${CORE_HEADERS} ${CORE_SOURCES})
 source_group("source\\platform" FILES ${PLATFORM_SOURCES})
 source_group("source\\platform\\opengl" FILES ${PLATFORM_OPENGL_SOURCES})
+source_group("source\\renderer" FILES ${RENDERER_SOURCES})
 source_group("source"           FILES ${MISC_FILES})
