@@ -38,6 +38,9 @@ set(PLATFORM_OPENGL_SOURCES
     
     src/Hazel/Platform/OpenGL/OpenGLContext.h
     src/Hazel/Platform/OpenGL/OpenGLContext.cpp
+
+    src/Hazel/Platform/OpenGL/OpenGLBuffer.h
+    src/Hazel/Platform/OpenGL/OpenGLBuffer.cpp
 )
 
 ## Renderer
@@ -45,6 +48,10 @@ set(RENDERER_SOURCES
     src/Hazel/Renderer/GraphicsContext.h
     src/Hazel/Renderer/Shader.h
     src/Hazel/Renderer/Shader.cpp
+    src/Hazel/Renderer/Buffer.h
+    src/Hazel/Renderer/Buffer.cpp
+    src/Hazel/Renderer/Renderer.h
+    src/Hazel/Renderer/Renderer.cpp
 )
 
 

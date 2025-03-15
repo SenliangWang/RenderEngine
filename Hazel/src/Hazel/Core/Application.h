@@ -5,6 +5,7 @@
 #include "Hazel/Core/Events/ApplicationEvent.h"
 #include "Hazel/Core/LayerStack.h"
 
+#include "Hazel/Renderer/Buffer.h"
 #include "Hazel/Renderer/Shader.h"
 
 namespace Hazel 
@@ -33,7 +34,10 @@ namespace Hazel
         bool m_Running = true;
         LayerStack m_LayerStack;
 
-		unsigned int m_VertexArray, m_VertexBuffer;
+        unsigned int m_VertexArray;
+        std::unique_ptr<VertexBuffer> m_VertexBuffer;
+        std::unique_ptr<IndexBuffer> m_IndexBuffer;
+
 		std::unique_ptr<Shader> m_Shader;
 
     private:
