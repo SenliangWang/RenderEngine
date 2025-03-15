@@ -5,6 +5,8 @@
 #include "Hazel/Core/Events/ApplicationEvent.h"
 #include "Hazel/Core/LayerStack.h"
 
+#include "Hazel/Renderer/Shader.h"
+
 namespace Hazel 
 {
     class Application 
@@ -31,7 +33,8 @@ namespace Hazel
         bool m_Running = true;
         LayerStack m_LayerStack;
 
-		unsigned int m_VertexArray, m_VertexBuffer, m_IndexBuffer;
+		unsigned int m_VertexArray, m_VertexBuffer;
+		std::unique_ptr<Shader> m_Shader;
 
     private:
         static Application* s_Instance;

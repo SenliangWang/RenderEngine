@@ -43,6 +43,8 @@ set(PLATFORM_OPENGL_SOURCES
 ## Renderer
 set(RENDERER_SOURCES
     src/Hazel/Renderer/GraphicsContext.h
+    src/Hazel/Renderer/Shader.h
+    src/Hazel/Renderer/Shader.cpp
 )
 
 
