@@ -15,6 +15,26 @@ namespace Hazel
 		s_Instance = this;
 		m_Window = std::unique_ptr<Window>(Window::Create());
 		m_Window->SetEventCallback(BIND_EVENT_FN(OnEvent));
+
+		glGenVertexArrays(1, &m_VertexArray);
+		glBindVertexArray(m_VertexArray);
+
+		glGenBuffers(1, &m_VertexBuffer);
+		glBindBuffer(GL_ARRAY_BUFFER, m_VertexBuffer);
+
+		float vertices[] = {
+			-0.5f, -0.5f, 0.0f,
+			 0.5f, -0.5f, 0.0f,
+			 0.0f,  0.5f, 0.0f
+		};
+
+		glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+
+		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+		glEnableVertexAttribArray(0);
+
+		glBindBuffer(GL_ARRAY_BUFFER, 0);
+		glBindVertexArray(0);
 	}
 
 	Application::~Application() 
@@ -28,6 +48,9 @@ namespace Hazel
 		{
 			glClearColor(1, 0, 0, 1);
 			glClear(GL_COLOR_BUFFER_BIT);
+
+			glBindVertexArray(m_VertexArray);
+			glDrawArrays(GL_TRIANGLES, 0, 3);
 
 			for (Layer* layer : m_LayerStack)
 				layer->OnUpdate();
@@ -50,7 +73,7 @@ namespace Hazel
 			}
 		}
 
-		HZ_CORE_TRACE("{0}", e.ToString());
+		// HZ_CORE_TRACE("{0}", e.ToString());
 	}
 
 	void Application::PushLayer(Layer* pLayer)
