@@ -44,6 +44,9 @@ set(PLATFORM_OPENGL_SOURCES
 
     src/Hazel/Platform/OpenGL/OpenGLVertexArray.h
     src/Hazel/Platform/OpenGL/OpenGLVertexArray.cpp
+
+    src/Hazel/Platform/OpenGL/OpenGLRendererAPI.h
+    src/Hazel/Platform/OpenGL/OpenGLRendererAPI.cpp
 )
 
 ## Renderer
@@ -61,6 +64,12 @@ set(RENDERER_SOURCES
     
     src/Hazel/Renderer/VertexArray.h
     src/Hazel/Renderer/VertexArray.cpp
+
+    src/Hazel/Renderer/RenderCommand.h
+    src/Hazel/Renderer/RenderCommand.cpp
+
+    src/Hazel/Renderer/RendererAPI.h
+    src/Hazel/Renderer/RendererAPI.cpp 
 )
 
 
@@ -119,6 +128,12 @@ add_subdirectory(vendor/imgui)
 
 # 链接ImGui库
 target_link_libraries(Hazel PUBLIC imgui)
+
+# 添加glm库
+add_subdirectory(vendor/glm)
+
+# 链接glm库
+target_link_libraries(Hazel PUBLIC glm)
 
 # 使用source_group组织文件
 source_group("source\\core"     FILES ${CORE_HEADERS} ${CORE_SOURCES})
