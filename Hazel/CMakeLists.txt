@@ -70,6 +70,9 @@ set(RENDERER_SOURCES
 
     src/Hazel/Renderer/RendererAPI.h
     src/Hazel/Renderer/RendererAPI.cpp 
+
+    src/Hazel/Renderer/OrthographicCamera.h
+    src/Hazel/Renderer/OrthographicCamera.cpp
 )
 
 
