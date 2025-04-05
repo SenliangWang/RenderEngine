@@ -68,7 +68,7 @@ namespace Hazel {
 
 	}
 
-	void ImGuiLayer::OnUpdate()
+	void ImGuiLayer::OnUpdate(Timestep ts)
 	{
 		ImGuiIO& io = ImGui::GetIO();
 		Application& app = Application::Get();

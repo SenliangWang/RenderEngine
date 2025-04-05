@@ -3,12 +3,14 @@ set(CORE_HEADERS
     src/Hazel/Core/Application.h
     src/Hazel/Core/Log.h
     src/Hazel/Core/Base.h
+    src/Hazel/Core/Timestep.h
 
     src/Hazel/Core/KeyCodes.h
     src/Hazel/Core/Events/Event.h
     src/Hazel/Core/Events/KeyEvent.h
     src/Hazel/Core/Events/MouseEvent.h
     src/Hazel/Core/Events/ApplicationEvent.h
+
 
     src/Hazel/Core/Window.h
     src/Hazel/Core/Layer.h
