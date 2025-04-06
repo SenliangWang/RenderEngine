@@ -26,12 +26,15 @@ set(CORE_SOURCES
     src/Hazel/Core/Layer.cpp
     src/Hazel/Core/LayerStack.cpp
 
+    src/Hazel/Core/Input.h
 )
 
 ## Platform
 set(PLATFORM_SOURCES
     src/Hazel/Platform/WindowsWindow.h
     src/Hazel/Platform/WindowsWindow.cpp
+    src/Hazel/Platform/WindowsInput.h
+    src/Hazel/Platform/WindowsInput.cpp
 )
 
 set(PLATFORM_OPENGL_SOURCES

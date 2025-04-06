@@ -6,6 +6,8 @@
 #include "Hazel/Core/Log.h" 
 #include "Hazel/Core/ImGuiLayer.h" 
 #include "Hazel/Core/Timestep.h"
+#include "Hazel/Core/Input.h"
+#include "Hazel/Core/KeyCodes.h"
 
 // ---- Entry Point ----
 // Main function

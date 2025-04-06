@@ -119,7 +119,6 @@ public:
 
 	void OnUpdate(Hazel::Timestep ts) override
 	{
-		/*
 		if (Hazel::Input::IsKeyPressed(HZ_KEY_LEFT))
 			m_CameraPosition.x -= m_CameraMoveSpeed * ts;
 		else if (Hazel::Input::IsKeyPressed(HZ_KEY_RIGHT))
@@ -134,7 +133,6 @@ public:
 			m_CameraRotation += m_CameraRotationSpeed * ts;
 		if (Hazel::Input::IsKeyPressed(HZ_KEY_D))
 			m_CameraRotation -= m_CameraRotationSpeed * ts;
-		*/
 
 		Hazel::RenderCommand::SetClearColor({ 0.1f, 0.1f, 0.1f, 1 });
 		Hazel::RenderCommand::Clear();

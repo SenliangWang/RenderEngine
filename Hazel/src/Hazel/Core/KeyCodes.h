@@ -200,10 +200,10 @@ namespace Hazel
 #define HZ_KEY_9               ::Hazel::Key::D9
 #define HZ_KEY_SEMICOLON       ::Hazel::Key::Semicolon     /* ; */
 #define HZ_KEY_EQUAL           ::Hazel::Key::Equal         /* = */
-#define HZ_KEY_A               ::Hazel::Key::A
+#define HZ_KEY_A               (int)::Hazel::Key::A
 #define HZ_KEY_B               ::Hazel::Key::B
 #define HZ_KEY_C               ::Hazel::Key::C
-#define HZ_KEY_D               ::Hazel::Key::D
+#define HZ_KEY_D               (int)::Hazel::Key::D
 #define HZ_KEY_E               ::Hazel::Key::E
 #define HZ_KEY_F               ::Hazel::Key::F
 #define HZ_KEY_G               ::Hazel::Key::G
@@ -240,10 +240,10 @@ namespace Hazel
 #define HZ_KEY_BACKSPACE       ::Hazel::Key::Backspace
 #define HZ_KEY_INSERT          ::Hazel::Key::Insert
 #define HZ_KEY_DELETE          ::Hazel::Key::Delete
-#define HZ_KEY_RIGHT           ::Hazel::Key::Right
-#define HZ_KEY_LEFT            ::Hazel::Key::Left
-#define HZ_KEY_DOWN            ::Hazel::Key::Down
-#define HZ_KEY_UP              ::Hazel::Key::Up
+#define HZ_KEY_RIGHT           (int)::Hazel::Key::Right
+#define HZ_KEY_LEFT            (int)::Hazel::Key::Left
+#define HZ_KEY_DOWN            (int)::Hazel::Key::Down
+#define HZ_KEY_UP              (int)::Hazel::Key::Up
 #define HZ_KEY_PAGE_UP         ::Hazel::Key::PageUp
 #define HZ_KEY_PAGE_DOWN       ::Hazel::Key::PageDown
 #define HZ_KEY_HOME            ::Hazel::Key::Home
