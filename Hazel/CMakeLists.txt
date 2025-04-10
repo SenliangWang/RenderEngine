@@ -52,6 +52,9 @@ set(PLATFORM_OPENGL_SOURCES
 
     src/Hazel/Platform/OpenGL/OpenGLRendererAPI.h
     src/Hazel/Platform/OpenGL/OpenGLRendererAPI.cpp
+
+    src/Hazel/Platform/OpenGL/OpenGLShader.h
+    src/Hazel/Platform/OpenGL/OpenGLShader.cpp
 )
 
 ## Renderer
