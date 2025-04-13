@@ -14,8 +14,6 @@ set(CORE_HEADERS
 
     src/Hazel/Core/Window.h
     src/Hazel/Core/Layer.h
-    src/Hazel/Core/ImGuiLayer.h
-    src/Hazel/Core/ImGuiLayer.cpp
 )
 
 set(CORE_SOURCES
@@ -27,6 +25,12 @@ set(CORE_SOURCES
     src/Hazel/Core/LayerStack.cpp
 
     src/Hazel/Core/Input.h
+)
+
+## ImGui
+set(IMGUI_SOURCES
+    src/Hazel/Imgui/ImGuiLayer.h
+    src/Hazel/Imgui/ImGuiLayer.cpp
 )
 
 ## Platform
@@ -99,6 +103,7 @@ add_library(Hazel STATIC
     ${PLATFORM_SOURCES}
     ${PLATFORM_OPENGL_SOURCES}
     ${MISC_FILES}
+    ${IMGUI_SOURCES}
     ${RENDERER_SOURCES}
 )
 
@@ -147,8 +152,9 @@ add_subdirectory(vendor/glm)
 target_link_libraries(Hazel PUBLIC glm)
 
 # 使用source_group组织文件
-source_group("source\\core"     FILES ${CORE_HEADERS} ${CORE_SOURCES})
-source_group("source\\platform" FILES ${PLATFORM_SOURCES})
+source_group("source\\core"             FILES ${CORE_HEADERS} ${CORE_SOURCES})
+source_group("source\\platform"         FILES ${PLATFORM_SOURCES})
 source_group("source\\platform\\opengl" FILES ${PLATFORM_OPENGL_SOURCES})
-source_group("source\\renderer" FILES ${RENDERER_SOURCES})
-source_group("source"           FILES ${MISC_FILES})
+source_group("source\\renderer"         FILES ${RENDERER_SOURCES})
+source_group("source\\Imgui"            FILES ${IMGUI_SOURCES})
+source_group("source"                   FILES ${MISC_FILES})
