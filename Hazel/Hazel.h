@@ -7,6 +7,7 @@
 #include "Hazel/Core/Timestep.h"
 #include "Hazel/Core/Input.h"
 #include "Hazel/Core/KeyCodes.h"
+#include "Hazel/Core/Base.h"
 
 // ---- Entry Point ----
 // Main function
@@ -19,5 +20,6 @@
 #include "Hazel/Renderer/Buffer.h"
 #include "Hazel/Renderer/Shader.h"
 #include "Hazel/Renderer/VertexArray.h"
+#include "Hazel/Renderer/Texture.h"
 
 #include "Hazel/Renderer/OrthographicCamera.h"

@@ -59,6 +59,9 @@ set(PLATFORM_OPENGL_SOURCES
 
     src/Hazel/Platform/OpenGL/OpenGLShader.h
     src/Hazel/Platform/OpenGL/OpenGLShader.cpp
+
+    src/Hazel/Platform/OpenGL/OpenGLTexture.h
+    src/Hazel/Platform/OpenGL/OpenGLTexture.cpp
 )
 
 ## Renderer
@@ -85,6 +88,14 @@ set(RENDERER_SOURCES
 
     src/Hazel/Renderer/OrthographicCamera.h
     src/Hazel/Renderer/OrthographicCamera.cpp
+
+    src/Hazel/Renderer/Texture.h
+    src/Hazel/Renderer/Texture.cpp
+)
+
+set(STB_IMAGE_SOURCES
+    vendor/stb_image/stb_image.h
+    vendor/stb_image/stb_image.cpp
 )
 
 
@@ -100,11 +111,13 @@ set(MISC_FILES
 add_library(Hazel STATIC 
     ${CORE_HEADERS}
     ${CORE_SOURCES}
+
     ${PLATFORM_SOURCES}
     ${PLATFORM_OPENGL_SOURCES}
     ${MISC_FILES}
     ${IMGUI_SOURCES}
     ${RENDERER_SOURCES}
+    ${STB_IMAGE_SOURCES}
 )
 
 # 设置预编译头
@@ -115,6 +128,7 @@ target_include_directories(Hazel PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}/src
     ${CMAKE_CURRENT_SOURCE_DIR}
     ${CMAKE_CURRENT_SOURCE_DIR}/vendor/spdlog/include
+    ${CMAKE_CURRENT_SOURCE_DIR}/vendor
 )
 
 # 添加spdlog库
@@ -157,4 +171,5 @@ source_group("source\\platform"         FILES ${PLATFORM_SOURCES})
 source_group("source\\platform\\opengl" FILES ${PLATFORM_OPENGL_SOURCES})
 source_group("source\\renderer"         FILES ${RENDERER_SOURCES})
 source_group("source\\Imgui"            FILES ${IMGUI_SOURCES})
+source_group("source\\stb_image"        FILES ${STB_IMAGE_SOURCES})
 source_group("source"                   FILES ${MISC_FILES})
