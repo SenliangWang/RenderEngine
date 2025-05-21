@@ -5,16 +5,16 @@
 
 namespace Hazel
  {
-	class Log
-	{
-	public:
-		static void Init();
-		static std::shared_ptr<spdlog::logger>& GetCoreLogger() ;
-		static std::shared_ptr<spdlog::logger>& GetClientLogger() ;
-	private:
-		static std::shared_ptr<spdlog::logger> s_CoreLogger;
-		static std::shared_ptr<spdlog::logger> s_ClientLogger;
-	};
+    class Log
+    {
+    public:
+        static void Init();
+        static std::shared_ptr<spdlog::logger>& GetCoreLogger() ;
+        static std::shared_ptr<spdlog::logger>& GetClientLogger() ;
+    private:
+        static std::shared_ptr<spdlog::logger> s_CoreLogger;
+        static std::shared_ptr<spdlog::logger> s_ClientLogger;
+    };
 }
 
 // Core log macros
@@ -26,15 +26,15 @@ namespace Hazel
 #define HZ_CORE_CRITICAL(...)    ::Hazel::Log::GetCoreLogger()->critical(__VA_ARGS__) 
 
 // Client log macros
-#define HZ_TRACE(...)	      ::Hazel::Log::GetClientLogger()->trace(__VA_ARGS__)
-#define HZ_INFO(...)	      ::Hazel::Log::GetClientLogger()->info(__VA_ARGS__)
-#define HZ_WARN(...)	      ::Hazel::Log::GetClientLogger()->warn(__VA_ARGS__)
-#define HZ_ERROR(...)	      ::Hazel::Log::GetClientLogger()->error(__VA_ARGS__)
-#define HZ_CRITICAL(...)	      ::Hazel::Log::GetClientLogger()->critical(__VA_ARGS__)
+#define HZ_TRACE(...)          ::Hazel::Log::GetClientLogger()->trace(__VA_ARGS__)
+#define HZ_INFO(...)          ::Hazel::Log::GetClientLogger()->info(__VA_ARGS__)
+#define HZ_WARN(...)          ::Hazel::Log::GetClientLogger()->warn(__VA_ARGS__)
+#define HZ_ERROR(...)          ::Hazel::Log::GetClientLogger()->error(__VA_ARGS__)
+#define HZ_CRITICAL(...)          ::Hazel::Log::GetClientLogger()->critical(__VA_ARGS__)
 
 // Core assert macro
 #ifdef HZ_ENABLE_ASSERTS
-	#define HZ_CORE_ASSERT(x, ...) { if(!(x)) { HZ_CORE_ERROR("Assertion Failed: {0}", __VA_ARGS__); __debugbreak(); } }
+    #define HZ_CORE_ASSERT(x, ...) { if(!(x)) { HZ_CORE_ERROR("Assertion Failed: {0}", __VA_ARGS__); __debugbreak(); } }
 #else
-	#define HZ_CORE_ASSERT(x, ...)
+    #define HZ_CORE_ASSERT(x, ...)
 #endif

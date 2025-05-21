@@ -27,9 +27,9 @@ namespace Hazel
         void PushLayer(Layer* pLayer);
         void PushOverLayer(Layer* pLayer);
 
-		inline Window& GetWindow() { return *m_Window; }
-		
-		static inline Application& Get() { return *s_Instance; }
+        inline Window& GetWindow() { return *m_Window; }
+        
+        static inline Application& Get() { return *s_Instance; }
 
     private:
         bool OnWindowClose(WindowCloseEvent& e);
@@ -39,7 +39,7 @@ namespace Hazel
         bool m_Running = true;
         LayerStack m_LayerStack;
         float m_LastFrameTime = 0.0f;
-		ImGuiLayer* m_ImGuiLayer;
+        ImGuiLayer* m_ImGuiLayer;
 
     private:
         static Application* s_Instance;

@@ -9,12 +9,12 @@ extern  Hazel::Application*   Hazel::CreateApplication();
 
 int main([[maybe_unused]] int argc, [[maybe_unused]] char* argv[]) 
 {
-	Hazel::Log::Init();
+    Hazel::Log::Init();
 
-	// Let the actual project to implement the CreateApplication() and return the app*
-	auto app = Hazel::CreateApplication();
-	app->Run();
-	delete app;
+    // Let the actual project to implement the CreateApplication() and return the app*
+    auto app = Hazel::CreateApplication();
+    app->Run();
+    delete app;
 }
 
 #endif //  HZ_PLATFORM_WINDOWS
