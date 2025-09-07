@@ -24,3 +24,9 @@ target_include_directories(Sandbox PRIVATE
 set_target_properties(Sandbox PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin"
 )
+
+# 设定 Visual Studio 调试时的工作目录为源码中的 Sandbox 目录，
+# 以便运行时可使用相对路径访问 `assets` 与贴图文件。
+set_target_properties(Sandbox PROPERTIES
+    VS_DEBUGGER_WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}/Sandbox"
+)
