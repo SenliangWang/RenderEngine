@@ -33,8 +33,7 @@ static const GLfloat kTeal[4] = { 0.0f, 0.5f, 0.5f, 1.0f };
 static int gWinW = 960;
 static int gWinH = 600;
 
-// Modes
-static bool gUseShader = false; // false: fixed pipeline -> blue; true: shader -> teal
+// Fog parameters (no toggles; constants)
 static int gFogMode = 0;        // 0:none, 1:linear, 2:exp, 3:exp2
 static float gFogDensity = 0.25f;
 static float gFogNear = 1.0f;
@@ -162,28 +161,7 @@ static void initProgram() {
 	gUniFogFar = glGetUniformLocation(gProgram, "fogFar");
 }
 
-static void setFixedPipelineState() {
-	glUseProgram(0);
-	glEnable(GL_DEPTH_TEST);
-
-	// Lighting to show effect of color-material tracking
-	glEnable(GL_LIGHTING);
-	glEnable(GL_LIGHT0);
-	GLfloat lightPos[4] = { 0.0f, 0.0f, 5.0f, 1.0f };
-	glLightfv(GL_LIGHT0, GL_POSITION, lightPos);
-
-	// Set material to Teal, but enable tracking so vertex color (blue) overrides
-	glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, kTeal);
-	glEnable(GL_COLOR_MATERIAL);
-	glColorMaterial(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE);
-
-	glEnableClientState(GL_VERTEX_ARRAY);
-	glEnableClientState(GL_NORMAL_ARRAY);
-	glEnableClientState(GL_COLOR_ARRAY);
-	glVertexPointer(3, GL_FLOAT, 0, kVertices);
-	glNormalPointer(GL_FLOAT, 0, kNormals);
-	glColorPointer(4, GL_FLOAT, 0, kColors);
-}
+// Fixed-pipeline setup removed; we always render with shader below
 
 static void setShaderPipelineState() {
 	glDisable(GL_LIGHTING);
@@ -242,17 +220,17 @@ static void setupMatricesAndMaybeUpload() {
 		glLoadMatrixf(MV);
 	}
 
-	if (gUseShader && gProgram) {
-		// Upload MV and MVP to shader
-		GLfloat mv[16];
-		GLfloat proj[16];
-		GLfloat mvp[16];
-		glGetFloatv(GL_MODELVIEW_MATRIX, mv);
-		glGetFloatv(GL_PROJECTION_MATRIX, proj);
-		mulMat4(proj, mv, mvp);
-		glUniformMatrix4fv(gUniMV, 1, GL_FALSE, mv);
-		glUniformMatrix4fv(gUniMVP, 1, GL_FALSE, mvp);
-	}
+    // Upload MV and MVP to shader every frame
+    if (gProgram) {
+        GLfloat mv[16];
+        GLfloat proj[16];
+        GLfloat mvp[16];
+        glGetFloatv(GL_MODELVIEW_MATRIX, mv);
+        glGetFloatv(GL_PROJECTION_MATRIX, proj);
+        mulMat4(proj, mv, mvp);
+        glUniformMatrix4fv(gUniMV, 1, GL_FALSE, mv);
+        glUniformMatrix4fv(gUniMVP, 1, GL_FALSE, mvp);
+    }
 }
 
 static void display() {
@@ -262,14 +240,9 @@ static void display() {
 
 	setupMatricesAndMaybeUpload();
 
-	if (!gUseShader) {
-		setFixedPipelineState();
-		glDrawArrays(GL_TRIANGLES, 0, 3);
-	} else {
-		setShaderPipelineState();
-		glDrawArrays(GL_TRIANGLES, 0, 3);
-		glDisableVertexAttribArray((GLuint)gAttrPos);
-	}
+    setShaderPipelineState();
+    glDrawArrays(GL_TRIANGLES, 0, 3);
+    glDisableVertexAttribArray((GLuint)gAttrPos);
 
 	glutSwapBuffers();
 }
@@ -281,48 +254,23 @@ static void reshape(int w, int h) {
 }
 
 static void keyboard(unsigned char key, int, int) {
-	switch (key) {
-		case 27: // ESC
-			std::exit(0);
-			break;
-		case 's':
-		case 'S':
-			gUseShader = !gUseShader;
-			printf("Shader %s\n", gUseShader ? "ON (teal + fog)" : "OFF (fixed pipeline, blue)\n");
-			glutPostRedisplay();
-			break;
-		case 'f':
-		case 'F':
-			gFogMode = (gFogMode + 1) % 4;
-			printf("Fog mode: %d (0:none 1:linear 2:exp 3:exp2)\n", gFogMode);
-			glutPostRedisplay();
-			break;
-		case '+':
-			gFogDensity *= 1.2f;
-			printf("fogDensity=%.3f\n", gFogDensity);
-			glutPostRedisplay();
-			break;
-		case '-':
-			gFogDensity /= 1.2f;
-			printf("fogDensity=%.3f\n", gFogDensity);
-			glutPostRedisplay();
-			break;
-	}
+    switch (key) {
+        case 27: // ESC
+            std::exit(0);
+            break;
+    }
 }
 
 static void printHelp() {
-	printf("FreeGLUT demo: fixed vs shader color\n");
-	printf(" - S: toggle shader (OFF=blue via vertex color tracking; ON=teal uniform)\n");
-	printf(" - F: cycle fog mode (0:none,1:linear,2:exp,3:exp2) [shader only]\n");
-	printf(" - +/-: adjust fog density [shader only]\n");
-	printf(" - ESC: quit\n");
+    printf("FreeGLUT demo: shader always ON (uniform teal)\n");
+    printf(" - ESC: quit\n");
 }
 
 int main(int argc, char **argv) {
 	glutInit(&argc, argv);
 	glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGBA | GLUT_DEPTH);
 	glutInitWindowSize(gWinW, gWinH);
-	glutCreateWindow("Fixed Pipeline vs Shader (FreeGLUT)");
+    glutCreateWindow("Shader Teal Demo (FreeGLUT)");
 
 	// Init GLEW after creating context
 	GLenum err = glewInit();
@@ -331,20 +279,20 @@ int main(int argc, char **argv) {
 		return 1;
 	}
 
-	printHelp();
+    printHelp();
 
-	// Create shader program
+    // Create shader program (always used)
 	initProgram();
-	if (!gProgram) {
-		fprintf(stderr, "Warning: shader program failed to compile/link. Shader mode disabled.\n");
-		gUseShader = false;
-	}
+    if (!gProgram) {
+        fprintf(stderr, "Error: shader program failed to compile/link.\n");
+        return 1;
+    }
 
 	glEnable(GL_DEPTH_TEST);
 
 	glutDisplayFunc(display);
 	glutReshapeFunc(reshape);
-	glutKeyboardFunc(keyboard);
+    glutKeyboardFunc(keyboard);
 
 	glutMainLoop();
 	return 0;
