@@ -164,26 +164,32 @@ static void initProgram() {
 // Fixed-pipeline setup removed; we always render with shader below
 
 static void setShaderPipelineState() {
-	glDisable(GL_LIGHTING);
-	glDisable(GL_COLOR_MATERIAL);
-	glDisableClientState(GL_COLOR_ARRAY);
-	glDisableClientState(GL_NORMAL_ARRAY);
-	glDisableClientState(GL_VERTEX_ARRAY);
+    glUseProgram(gProgram);
 
-	glUseProgram(gProgram);
+    // Match your state order/intent
+    glEnable(GL_DEPTH_TEST);
+    glEnable(GL_LIGHTING);
+    glEnable(GL_LIGHT0);
+    GLfloat lightPos[4] = { 0.0f, 0.0f, 5.0f, 1.0f };
+    glLightfv(GL_LIGHT0, GL_POSITION, lightPos);
+    glLightModeli(GL_LIGHT_MODEL_TWO_SIDE, GL_TRUE); // Two-sided lighting
+    glDisable(GL_CULL_FACE); // FM_FRONT_AND_BACK
+    glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, kTeal);
+    glEnable(GL_COLOR_MATERIAL);
+    glColorMaterial(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE); // Vertex colour tracking
 
-	// Provide attribute from client memory
-	glEnableVertexAttribArray((GLuint)gAttrPos);
-	glVertexAttribPointer((GLuint)gAttrPos, 3, GL_FLOAT, GL_FALSE, 0, kVertices);
+    // Provide attribute from client memory (shader uses only positions)
+    glEnableVertexAttribArray((GLuint)gAttrPos);
+    glVertexAttribPointer((GLuint)gAttrPos, 3, GL_FLOAT, GL_FALSE, 0, kVertices);
 
-	// Uniforms that match your shader
-	glUniform4fv(gUniColor, 1, kTeal);
-	const GLfloat fogClr[4] = { 0.6f, 0.6f, 0.6f, 1.0f };
-	glUniform4fv(gUniFogColor, 1, fogClr);
-	glUniform1i(gUniFogMode, gFogMode);
-	glUniform1f(gUniFogDensity, gFogDensity);
-	glUniform1f(gUniFogNear, gFogNear);
-	glUniform1f(gUniFogFar, gFogFar);
+    // Uniforms that match your shader
+    glUniform4fv(gUniColor, 1, kTeal);
+    const GLfloat fogClr[4] = { 0.6f, 0.6f, 0.6f, 1.0f };
+    glUniform4fv(gUniFogColor, 1, fogClr);
+    glUniform1i(gUniFogMode, gFogMode);
+    glUniform1f(gUniFogDensity, gFogDensity);
+    glUniform1f(gUniFogNear, gFogNear);
+    glUniform1f(gUniFogFar, gFogFar);
 }
 
 static void setupMatricesAndMaybeUpload() {
