@@ -42,7 +42,8 @@ static float gFogFar = 5.0f;
 // Shader program + locations
 static GLuint gProgram = 0;
 static GLint gAttrPos = -1;
-static GLint gUniColor = -1;
+static GLint gAttrNormal = -1;
+static GLint gAttrColor = -1;
 static GLint gUniMVP = -1;
 static GLint gUniMV = -1;
 static GLint gUniFogMode = -1;
@@ -100,43 +101,44 @@ static GLuint linkProgram(GLuint vs, GLuint fs) {
 }
 
 static const char *kVertexSrc =
-	"#version 120\n"
-	"attribute vec3 attrVertex;\n"
-	"uniform vec4 vColor;\n"
-	"uniform mat4 mvpMatrix;\n"
-	"uniform mat4 mvMatrix;\n"
-	"varying vec4 vFragColor;\n"
-	"varying vec4 vViewPos;\n"
-	"void main() {\n"
-	"  vFragColor = vColor;\n"
-	"  gl_Position = mvpMatrix * vec4(attrVertex, 1.0);\n"
-	"  vViewPos = mvMatrix * vec4(attrVertex, 1.0);\n"
-	"}\n";
+    "#version 120\n"
+    "attribute vec3 attrVertex;\n"
+    "attribute vec3 attrNormal;\n"
+    "attribute vec4 attrColor;\n"
+    "uniform mat4 mvpMatrix;\n"
+    "uniform mat4 mvMatrix;\n"
+    "varying vec4 vFragColor;\n"
+    "varying vec4 vViewPos;\n"
+    "void main() {\n"
+    "  vFragColor = attrColor;\n"
+    "  gl_Position = mvpMatrix * vec4(attrVertex, 1.0);\n"
+    "  vViewPos = mvMatrix * vec4(attrVertex, 1.0);\n"
+    "}\n";
 
 static const char *kFragmentSrc =
-	"#version 120\n"
-	"varying vec4 vFragColor;\n"
-	"varying vec4 vViewPos;\n"
-	"uniform int fogMode;\n"
-	"uniform float fogDensity;\n"
-	"uniform vec4 fogColor;\n"
-	"uniform float fogNear;\n"
-	"uniform float fogFar;\n"
-	"void main() {\n"
-	"  vec4 c = vFragColor;\n"
-	"  float fogDepth = -vViewPos.z;\n"
-	"  if (fogMode == 1) {\n"
-	"    float fogFactor = clamp((fogDepth - fogNear) / max(0.0001, (fogFar - fogNear)), 0.0, 1.0);\n"
-	"    c.rgb = mix(c.rgb, fogColor.rgb, fogFactor);\n"
-	"  } else if (fogMode == 2) {\n"
-	"    float fogFactor = 1.0 - exp(-fogDensity * fogDepth);\n"
-	"    c.rgb = mix(c.rgb, fogColor.rgb, fogFactor);\n"
-	"  } else if (fogMode == 3) {\n"
-	"    float fogFactor = 1.0 - exp(-fogDensity*fogDensity*fogDepth*fogDepth);\n"
-	"    c.rgb = mix(c.rgb, fogColor.rgb, fogFactor);\n"
-	"  }\n"
-	"  gl_FragColor = c;\n"
-	"}\n";
+    "#version 120\n"
+    "varying vec4 vFragColor;\n"
+    "varying vec4 vViewPos;\n"
+    "uniform int fogMode;\n"
+    "uniform float fogDensity;\n"
+    "uniform vec4 fogColor;\n"
+    "uniform float fogNear;\n"
+    "uniform float fogFar;\n"
+    "void main() {\n"
+    "  vec4 c = vFragColor;\n"
+    "  float fogDepth = -vViewPos.z;\n"
+    "  if (fogMode == 1) {\n"
+    "    float fogFactor = clamp((fogDepth - fogNear) / max(0.0001, (fogFar - fogNear)), 0.0, 1.0);\n"
+    "    c.rgb = mix(c.rgb, fogColor.rgb, fogFactor);\n"
+    "  } else if (fogMode == 2) {\n"
+    "    float fogFactor = 1.0 - exp(-fogDensity * fogDepth);\n"
+    "    c.rgb = mix(c.rgb, fogColor.rgb, fogFactor);\n"
+    "  } else if (fogMode == 3) {\n"
+    "    float fogFactor = 1.0 - exp(-fogDensity*fogDensity*fogDepth*fogDepth);\n"
+    "    c.rgb = mix(c.rgb, fogColor.rgb, fogFactor);\n"
+    "  }\n"
+    "  gl_FragColor = c;\n"
+    "}\n";
 
 static void initProgram() {
 	GLuint vs = compileShader(GL_VERTEX_SHADER, kVertexSrc);
@@ -149,9 +151,10 @@ static void initProgram() {
 	glDeleteShader(fs);
 	if (!gProgram) return;
 
-	// Query locations
-	gAttrPos = glGetAttribLocation(gProgram, "attrVertex");
-	gUniColor = glGetUniformLocation(gProgram, "vColor");
+    // Query locations
+    gAttrPos = glGetAttribLocation(gProgram, "attrVertex");
+    gAttrNormal = glGetAttribLocation(gProgram, "attrNormal");
+    gAttrColor = glGetAttribLocation(gProgram, "attrColor");
 	gUniMVP = glGetUniformLocation(gProgram, "mvpMatrix");
 	gUniMV = glGetUniformLocation(gProgram, "mvMatrix");
 	gUniFogMode = glGetUniformLocation(gProgram, "fogMode");
@@ -178,12 +181,21 @@ static void setShaderPipelineState() {
     glEnable(GL_COLOR_MATERIAL);
     glColorMaterial(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE); // Vertex colour tracking
 
-    // Provide attribute from client memory (shader uses only positions)
-    glEnableVertexAttribArray((GLuint)gAttrPos);
-    glVertexAttribPointer((GLuint)gAttrPos, 3, GL_FLOAT, GL_FALSE, 0, kVertices);
+    // Provide attributes from client memory (position, normal, color)
+    if (gAttrPos >= 0) {
+        glEnableVertexAttribArray((GLuint)gAttrPos);
+        glVertexAttribPointer((GLuint)gAttrPos, 3, GL_FLOAT, GL_FALSE, 0, kVertices);
+    }
+    if (gAttrNormal >= 0) {
+        glEnableVertexAttribArray((GLuint)gAttrNormal);
+        glVertexAttribPointer((GLuint)gAttrNormal, 3, GL_FLOAT, GL_FALSE, 0, kNormals);
+    }
+    if (gAttrColor >= 0) {
+        glEnableVertexAttribArray((GLuint)gAttrColor);
+        glVertexAttribPointer((GLuint)gAttrColor, 4, GL_FLOAT, GL_FALSE, 0, kColors);
+    }
 
     // Uniforms that match your shader
-    glUniform4fv(gUniColor, 1, kTeal);
     const GLfloat fogClr[4] = { 0.6f, 0.6f, 0.6f, 1.0f };
     glUniform4fv(gUniFogColor, 1, fogClr);
     glUniform1i(gUniFogMode, gFogMode);
