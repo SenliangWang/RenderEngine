@@ -42,8 +42,7 @@ static float gFogFar = 5.0f;
 // Shader program + locations
 static GLuint gProgram = 0;
 static GLint gAttrPos = -1;
-static GLint gAttrNormal = -1;
-static GLint gAttrColor = -1;
+static GLint gUniColor = -1;
 static GLint gUniMVP = -1;
 static GLint gUniMV = -1;
 static GLint gUniFogMode = -1;
@@ -103,14 +102,13 @@ static GLuint linkProgram(GLuint vs, GLuint fs) {
 static const char *kVertexSrc =
     "#version 120\n"
     "attribute vec3 attrVertex;\n"
-    "attribute vec3 attrNormal;\n"
-    "attribute vec4 attrColor;\n"
+    "uniform vec4 vColor;\n"
     "uniform mat4 mvpMatrix;\n"
     "uniform mat4 mvMatrix;\n"
     "varying vec4 vFragColor;\n"
     "varying vec4 vViewPos;\n"
     "void main() {\n"
-    "  vFragColor = attrColor;\n"
+    "  vFragColor = vColor;\n"
     "  gl_Position = mvpMatrix * vec4(attrVertex, 1.0);\n"
     "  vViewPos = mvMatrix * vec4(attrVertex, 1.0);\n"
     "}\n";
@@ -153,8 +151,7 @@ static void initProgram() {
 
     // Query locations
     gAttrPos = glGetAttribLocation(gProgram, "attrVertex");
-    gAttrNormal = glGetAttribLocation(gProgram, "attrNormal");
-    gAttrColor = glGetAttribLocation(gProgram, "attrColor");
+    gUniColor = glGetUniformLocation(gProgram, "vColor");
 	gUniMVP = glGetUniformLocation(gProgram, "mvpMatrix");
 	gUniMV = glGetUniformLocation(gProgram, "mvMatrix");
 	gUniFogMode = glGetUniformLocation(gProgram, "fogMode");
@@ -181,21 +178,14 @@ static void setShaderPipelineState() {
     glEnable(GL_COLOR_MATERIAL);
     glColorMaterial(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE); // Vertex colour tracking
 
-    // Provide attributes from client memory (position, normal, color)
+    // Provide attributes from client memory (position). Color comes from uniform vColor
     if (gAttrPos >= 0) {
         glEnableVertexAttribArray((GLuint)gAttrPos);
         glVertexAttribPointer((GLuint)gAttrPos, 3, GL_FLOAT, GL_FALSE, 0, kVertices);
     }
-    if (gAttrNormal >= 0) {
-        glEnableVertexAttribArray((GLuint)gAttrNormal);
-        glVertexAttribPointer((GLuint)gAttrNormal, 3, GL_FLOAT, GL_FALSE, 0, kNormals);
-    }
-    if (gAttrColor >= 0) {
-        glEnableVertexAttribArray((GLuint)gAttrColor);
-        glVertexAttribPointer((GLuint)gAttrColor, 4, GL_FLOAT, GL_FALSE, 0, kColors);
-    }
 
     // Uniforms that match your shader
+    glUniform4fv(gUniColor, 1, kTeal); // diffuse color
     const GLfloat fogClr[4] = { 0.6f, 0.6f, 0.6f, 1.0f };
     glUniform4fv(gUniFogColor, 1, fogClr);
     glUniform1i(gUniFogMode, gFogMode);
