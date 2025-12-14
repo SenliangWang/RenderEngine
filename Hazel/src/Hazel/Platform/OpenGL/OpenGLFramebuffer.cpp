@@ -1,5 +1,5 @@
 #include "hzpch.h"
-#include "Platform/OpenGL/OpenGLFramebuffer.h"
+#include "Hazel/Platform/OpenGL/OpenGLFramebuffer.h"
 
 #include <glad/glad.h>
 
@@ -26,22 +26,29 @@ namespace Hazel {
 
 		static void AttachColorTexture(uint32_t id, int samples, GLenum internalFormat, GLenum format, uint32_t width, uint32_t height, int index)
 		{
-			bool multisampled = samples > 1;
+			bool multisampled = samples > 1; // 检查是否启用多重采样
 			if (multisampled)
 			{
+				// 多重采样纹理：为抗锯齿准备的特殊纹理
 				glTexImage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE, samples, internalFormat, width, height, GL_FALSE);
 			}
 			else
 			{
+				// 普通2D纹理：分配显存空间（nullptr表示只分配空间但不传输数据）
 				glTexImage2D(GL_TEXTURE_2D, 0, internalFormat, width, height, 0, format, GL_UNSIGNED_BYTE, nullptr);
 
+				// 设置纹理参数
+				// 缩小/放大过滤：线性插值（平滑效果）
 				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+				// 纹理环绕方式：CLAMP_TO_EDGE（边缘拉伸），防止边缘出现奇怪的颜色
 				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
 				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 			}
 
+			// 将生成的纹理“挂载”到帧缓冲（FBO）的颜色附件点上
+			// index 决定了是第几个颜色附件 (Color Attachment 0, 1, 2...)
 			glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + index, TextureTarget(multisampled), id, 0);
 		}
 
@@ -84,7 +91,7 @@ namespace Hazel {
 				case FramebufferTextureFormat::RED_INTEGER: return GL_RED_INTEGER;
 			}
 
-			HZ_CORE_ASSERT(false);
+			HZ_CORE_ASSERT(false, "");
 			return 0;
 		}
 
@@ -163,7 +170,7 @@ namespace Hazel {
 
 		if (m_ColorAttachments.size() > 1)
 		{
-			HZ_CORE_ASSERT(m_ColorAttachments.size() <= 4);
+			HZ_CORE_ASSERT(m_ColorAttachments.size() <= 4, "");
 			GLenum buffers[4] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2, GL_COLOR_ATTACHMENT3 };
 			glDrawBuffers(m_ColorAttachments.size(), buffers);
 		}
@@ -204,7 +211,7 @@ namespace Hazel {
 
 	int OpenGLFramebuffer::ReadPixel(uint32_t attachmentIndex, int x, int y)
 	{
-		HZ_CORE_ASSERT(attachmentIndex < m_ColorAttachments.size());
+		HZ_CORE_ASSERT(attachmentIndex < m_ColorAttachments.size(), "");
 
 		glReadBuffer(GL_COLOR_ATTACHMENT0 + attachmentIndex);
 		int pixelData;
@@ -215,7 +222,7 @@ namespace Hazel {
 
 	void OpenGLFramebuffer::ClearAttachment(uint32_t attachmentIndex, int value)
 	{
-		HZ_CORE_ASSERT(attachmentIndex < m_ColorAttachments.size());
+		HZ_CORE_ASSERT(attachmentIndex < m_ColorAttachments.size(), "");
 
 		auto& spec = m_ColorAttachmentSpecifications[attachmentIndex];
 		glClearTexImage(m_ColorAttachments[attachmentIndex], 0,

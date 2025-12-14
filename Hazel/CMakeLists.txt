@@ -62,6 +62,9 @@ set(PLATFORM_OPENGL_SOURCES
 
     src/Hazel/Platform/OpenGL/OpenGLTexture.h
     src/Hazel/Platform/OpenGL/OpenGLTexture.cpp
+
+    src/Hazel/Platform/OpenGL/OpenGLFramebuffer.h
+    src/Hazel/Platform/OpenGL/OpenGLFramebuffer.cpp
 )
 
 ## Renderer
@@ -91,6 +94,9 @@ set(RENDERER_SOURCES
 
     src/Hazel/Renderer/Texture.h
     src/Hazel/Renderer/Texture.cpp
+
+    src/Hazel/Renderer/Framebuffer.h
+    src/Hazel/Renderer/Framebuffer.cpp
 )
 
 set(STB_IMAGE_SOURCES
