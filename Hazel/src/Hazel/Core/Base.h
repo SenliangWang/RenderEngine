@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 
 #include <memory>
 
@@ -15,8 +15,16 @@ namespace Hazel {
 
 
 #ifdef HZ_ENABLE_ASSERTS
-    #define HZ_ASSERT(x, ...) { if(!(x)) { HZ_ERROR("Assertion Failed: {0}", __VA_ARGS__); __debugbreak(); } }
-    #define HZ_CORE_ASSERT(x, ...) { if(!(x)) { HZ_CORE_ERROR("Assertion Failed: {0}", __VA_ARGS__); __debugbreak(); } }
+    #if defined(_MSC_VER)
+        #define HZ_DEBUGBREAK() __debugbreak()
+    #elif defined(__GNUC__) || defined(__clang__)
+        #include <signal.h>
+        #define HZ_DEBUGBREAK() raise(SIGTRAP)
+    #else
+        #define HZ_DEBUGBREAK()
+    #endif
+    #define HZ_ASSERT(x, ...) { if(!(x)) { HZ_ERROR("Assertion Failed: {0}", __VA_ARGS__); HZ_DEBUGBREAK(); } }
+    #define HZ_CORE_ASSERT(x, ...) { if(!(x)) { HZ_CORE_ERROR("Assertion Failed: {0}", __VA_ARGS__); HZ_DEBUGBREAK(); } }
 #else
     #define HZ_ASSERT(x, ...)
     #define HZ_CORE_ASSERT(x, ...)
