@@ -16,4 +16,5 @@
 #include <Windows.h>
 #endif
 
+#include "Hazel/Core/Base.h"
 #include "Hazel/Core/Log.h"

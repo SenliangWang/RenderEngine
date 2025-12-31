@@ -486,13 +486,395 @@ private:
     glm::vec3 m_BrushColor = { 0.2f, 0.6f, 1.0f };
 };
 
+// 三维剖面演示层
+class CrossSectionLayer : public Hazel::Layer
+{
+public:
+    CrossSectionLayer() 
+        : Layer("CrossSection"), 
+          m_Camera(45.0f, 16.0f/9.0f, 0.1f, 100.0f)
+    {
+    }
+
+    virtual void OnAttach() override
+    {
+        // 创建立方体几何体（包含法线）
+        CreateCubeGeometry();
+        
+        // 加载着色器
+        m_CrossSectionShader = m_ShaderLibrary.Load("assets/shaders/CrossSection.glsl");
+        
+        // 创建剖切面几何体（用于可视化）
+        CreateClipPlaneGeometry();
+        
+        // 初始化相机
+        m_CameraPosition = glm::vec3(3.0f, 3.0f, 3.0f);
+        m_Camera.SetPosition(m_CameraPosition);
+        m_Camera.LookAt(glm::vec3(0.0f));
+        
+        // 启用深度测试
+        glEnable(GL_DEPTH_TEST);
+    }
+
+    virtual void OnUpdate(Hazel::Timestep ts) override
+    {
+        // 相机控制
+        UpdateCamera(ts);
+        
+        // 清除缓冲
+        Hazel::RenderCommand::SetClearColor({ 0.1f, 0.1f, 0.1f, 1.0f });
+        Hazel::RenderCommand::Clear();
+        glClear(GL_DEPTH_BUFFER_BIT);
+        
+        // 计算剖切平面方程 (Ax + By + Cz + D = 0)
+        glm::vec4 clipPlane = glm::vec4(m_ClipPlaneNormal, m_ClipPlaneDistance);
+        
+        // 渲染立方体
+        auto shader = std::dynamic_pointer_cast<Hazel::OpenGLShader>(m_CrossSectionShader);
+        shader->Bind();
+        
+        // 上传 uniforms
+        shader->UploadUniformMat4("u_ViewProjection", m_Camera.GetViewProjectionMatrix());
+        shader->UploadUniformMat4("u_Transform", glm::mat4(1.0f));
+        shader->UploadUniformMat4("u_Model", glm::mat4(1.0f));
+        shader->UploadUniformFloat4("u_ClipPlane", clipPlane);
+        shader->UploadUniformFloat3("u_Color", m_CubeColor);
+        shader->UploadUniformFloat3("u_LightPos", glm::vec3(5.0f, 5.0f, 5.0f));
+        shader->UploadUniformFloat3("u_ViewPos", m_CameraPosition);
+        shader->UploadUniformInt("u_EnableClipping", m_EnableClipping ? 1 : 0);
+        shader->UploadUniformInt("u_ShowCrossSection", m_ShowCrossSection ? 1 : 0);
+        shader->UploadUniformFloat3("u_CrossSectionColor", m_CrossSectionColor);
+        
+        // 绘制立方体
+        m_CubeVA->Bind();
+        Hazel::RenderCommand::DrawIndexed(m_CubeVA);
+        
+        // 如果显示剖切平面，绘制半透明平面
+        if (m_ShowClipPlane)
+        {
+            RenderClipPlane();
+        }
+    }
+
+    virtual void OnImGuiRender() override
+    {
+        ImGui::Begin("三维剖面控制");
+        
+        ImGui::Text("剖切平面设置");
+        ImGui::Separator();
+        
+        ImGui::Checkbox("启用剖切", &m_EnableClipping);
+        ImGui::Checkbox("显示剖切平面", &m_ShowClipPlane);
+        ImGui::Checkbox("高亮剖切面", &m_ShowCrossSection);
+        
+        ImGui::Spacing();
+        ImGui::Text("剖切平面法线");
+        ImGui::SliderFloat("X", &m_ClipPlaneNormal.x, -1.0f, 1.0f);
+        ImGui::SliderFloat("Y", &m_ClipPlaneNormal.y, -1.0f, 1.0f);
+        ImGui::SliderFloat("Z", &m_ClipPlaneNormal.z, -1.0f, 1.0f);
+        
+        // 归一化法线
+        if (glm::length(m_ClipPlaneNormal) > 0.01f)
+        {
+            m_ClipPlaneNormal = glm::normalize(m_ClipPlaneNormal);
+        }
+        
+        ImGui::Spacing();
+        ImGui::SliderFloat("剖切距离", &m_ClipPlaneDistance, -2.0f, 2.0f);
+        
+        ImGui::Spacing();
+        ImGui::ColorEdit3("立方体颜色", glm::value_ptr(m_CubeColor));
+        ImGui::ColorEdit3("剖切面颜色", glm::value_ptr(m_CrossSectionColor));
+        
+        ImGui::Spacing();
+        ImGui::Text("快捷预设");
+        if (ImGui::Button("XY平面")) {
+            m_ClipPlaneNormal = glm::vec3(0.0f, 0.0f, 1.0f);
+            m_ClipPlaneDistance = 0.0f;
+        }
+        ImGui::SameLine();
+        if (ImGui::Button("XZ平面")) {
+            m_ClipPlaneNormal = glm::vec3(0.0f, 1.0f, 0.0f);
+            m_ClipPlaneDistance = 0.0f;
+        }
+        ImGui::SameLine();
+        if (ImGui::Button("YZ平面")) {
+            m_ClipPlaneNormal = glm::vec3(1.0f, 0.0f, 0.0f);
+            m_ClipPlaneDistance = 0.0f;
+        }
+        
+        ImGui::Spacing();
+        ImGui::Separator();
+        ImGui::Text("相机控制");
+        ImGui::Text("鼠标右键拖动旋转");
+        ImGui::Text("滚轮缩放");
+        ImGui::SliderFloat("旋转速度", &m_CameraRotateSpeed, 0.1f, 5.0f);
+        
+        ImGui::End();
+    }
+
+    void OnEvent(Hazel::Event& event) override
+    {
+    }
+
+private:
+    void CreateCubeGeometry()
+    {
+        // 立方体顶点数据（位置 + 法线 + 纹理坐标）
+        float cubeVertices[] = {
+            // 前面 (Z+)
+            -0.5f, -0.5f,  0.5f,  0.0f,  0.0f,  1.0f,  0.0f, 0.0f,
+             0.5f, -0.5f,  0.5f,  0.0f,  0.0f,  1.0f,  1.0f, 0.0f,
+             0.5f,  0.5f,  0.5f,  0.0f,  0.0f,  1.0f,  1.0f, 1.0f,
+            -0.5f,  0.5f,  0.5f,  0.0f,  0.0f,  1.0f,  0.0f, 1.0f,
+            
+            // 后面 (Z-)
+            -0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  1.0f, 0.0f,
+            -0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  1.0f, 1.0f,
+             0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  0.0f, 1.0f,
+             0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  0.0f, 0.0f,
+            
+            // 左面 (X-)
+            -0.5f, -0.5f, -0.5f, -1.0f,  0.0f,  0.0f,  0.0f, 0.0f,
+            -0.5f, -0.5f,  0.5f, -1.0f,  0.0f,  0.0f,  1.0f, 0.0f,
+            -0.5f,  0.5f,  0.5f, -1.0f,  0.0f,  0.0f,  1.0f, 1.0f,
+            -0.5f,  0.5f, -0.5f, -1.0f,  0.0f,  0.0f,  0.0f, 1.0f,
+            
+            // 右面 (X+)
+             0.5f, -0.5f, -0.5f,  1.0f,  0.0f,  0.0f,  1.0f, 0.0f,
+             0.5f,  0.5f, -0.5f,  1.0f,  0.0f,  0.0f,  1.0f, 1.0f,
+             0.5f,  0.5f,  0.5f,  1.0f,  0.0f,  0.0f,  0.0f, 1.0f,
+             0.5f, -0.5f,  0.5f,  1.0f,  0.0f,  0.0f,  0.0f, 0.0f,
+            
+            // 上面 (Y+)
+            -0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,  0.0f, 1.0f,
+            -0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,  0.0f, 0.0f,
+             0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,  1.0f, 0.0f,
+             0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,  1.0f, 1.0f,
+            
+            // 下面 (Y-)
+            -0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,  0.0f, 0.0f,
+             0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,  1.0f, 0.0f,
+             0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,  1.0f, 1.0f,
+            -0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,  0.0f, 1.0f
+        };
+        
+        uint32_t cubeIndices[] = {
+            0,  1,  2,  2,  3,  0,   // 前面
+            4,  5,  6,  6,  7,  4,   // 后面
+            8,  9, 10, 10, 11,  8,   // 左面
+            12, 13, 14, 14, 15, 12,  // 右面
+            16, 17, 18, 18, 19, 16,  // 上面
+            20, 21, 22, 22, 23, 20   // 下面
+        };
+        
+        m_CubeVA.reset(Hazel::VertexArray::Create());
+        
+        Hazel::Ref<Hazel::VertexBuffer> cubeVB;
+        cubeVB.reset(Hazel::VertexBuffer::Create(cubeVertices, sizeof(cubeVertices)));
+        cubeVB->SetLayout({
+            { Hazel::ShaderDataType::Float3, "a_Position" },
+            { Hazel::ShaderDataType::Float3, "a_Normal" },
+            { Hazel::ShaderDataType::Float2, "a_TexCoord" }
+        });
+        m_CubeVA->AddVertexBuffer(cubeVB);
+        
+        Hazel::Ref<Hazel::IndexBuffer> cubeIB;
+        cubeIB.reset(Hazel::IndexBuffer::Create(cubeIndices, sizeof(cubeIndices) / sizeof(uint32_t)));
+        m_CubeVA->SetIndexBuffer(cubeIB);
+    }
+    
+    void CreateClipPlaneGeometry()
+    {
+        // 创建一个大的平面用于可视化剖切面
+        float planeVertices[] = {
+            -2.0f, -2.0f, 0.0f,  0.0f, 0.0f, 1.0f,  0.0f, 0.0f,
+             2.0f, -2.0f, 0.0f,  0.0f, 0.0f, 1.0f,  1.0f, 0.0f,
+             2.0f,  2.0f, 0.0f,  0.0f, 0.0f, 1.0f,  1.0f, 1.0f,
+            -2.0f,  2.0f, 0.0f,  0.0f, 0.0f, 1.0f,  0.0f, 1.0f
+        };
+        
+        uint32_t planeIndices[] = { 0, 1, 2, 2, 3, 0 };
+        
+        m_ClipPlaneVA.reset(Hazel::VertexArray::Create());
+        
+        Hazel::Ref<Hazel::VertexBuffer> planeVB;
+        planeVB.reset(Hazel::VertexBuffer::Create(planeVertices, sizeof(planeVertices)));
+        planeVB->SetLayout({
+            { Hazel::ShaderDataType::Float3, "a_Position" },
+            { Hazel::ShaderDataType::Float3, "a_Normal" },
+            { Hazel::ShaderDataType::Float2, "a_TexCoord" }
+        });
+        m_ClipPlaneVA->AddVertexBuffer(planeVB);
+        
+        Hazel::Ref<Hazel::IndexBuffer> planeIB;
+        planeIB.reset(Hazel::IndexBuffer::Create(planeIndices, 6));
+        m_ClipPlaneVA->SetIndexBuffer(planeIB);
+    }
+    
+    void RenderClipPlane()
+    {
+        // 启用混合以显示半透明平面
+        glEnable(GL_BLEND);
+        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+        glDisable(GL_CULL_FACE);
+        
+        auto shader = std::dynamic_pointer_cast<Hazel::OpenGLShader>(m_CrossSectionShader);
+        shader->Bind();
+        
+        // 计算剖切平面的变换矩阵
+        glm::mat4 planeTransform = CalculatePlaneTransform();
+        
+        shader->UploadUniformMat4("u_ViewProjection", m_Camera.GetViewProjectionMatrix());
+        shader->UploadUniformMat4("u_Transform", planeTransform);
+        shader->UploadUniformMat4("u_Model", planeTransform);
+        shader->UploadUniformFloat4("u_ClipPlane", glm::vec4(0.0f, 0.0f, 0.0f, 1.0f));
+        shader->UploadUniformFloat3("u_Color", glm::vec3(1.0f, 1.0f, 0.0f));
+        shader->UploadUniformFloat3("u_LightPos", glm::vec3(5.0f, 5.0f, 5.0f));
+        shader->UploadUniformFloat3("u_ViewPos", m_CameraPosition);
+        shader->UploadUniformInt("u_EnableClipping", 0);
+        shader->UploadUniformInt("u_ShowCrossSection", 0);
+        shader->UploadUniformFloat3("u_CrossSectionColor", m_CrossSectionColor);
+        
+        // 修改片段着色器输出的 alpha 值（需要在着色器中处理，或者直接设置固定alpha）
+        m_ClipPlaneVA->Bind();
+        
+        // 临时修改颜色使其半透明
+        glEnable(GL_DEPTH_TEST);
+        glDepthMask(GL_FALSE); // 不写入深度
+        Hazel::RenderCommand::DrawIndexed(m_ClipPlaneVA);
+        glDepthMask(GL_TRUE);
+        
+        glDisable(GL_BLEND);
+        glEnable(GL_CULL_FACE);
+    }
+    
+    glm::mat4 CalculatePlaneTransform()
+    {
+        // 计算从 Z 轴到法线方向的旋转
+        glm::vec3 up = glm::vec3(0.0f, 0.0f, 1.0f);
+        glm::vec3 normal = m_ClipPlaneNormal;
+        
+        glm::mat4 rotation = glm::mat4(1.0f);
+        if (glm::length(glm::cross(up, normal)) > 0.01f)
+        {
+            glm::vec3 axis = glm::normalize(glm::cross(up, normal));
+            float angle = acos(glm::dot(up, normal));
+            rotation = glm::rotate(glm::mat4(1.0f), angle, axis);
+        }
+        else if (glm::dot(up, normal) < 0.0f)
+        {
+            rotation = glm::rotate(glm::mat4(1.0f), glm::pi<float>(), glm::vec3(1.0f, 0.0f, 0.0f));
+        }
+        
+        // 平移到剖切距离
+        glm::vec3 position = -m_ClipPlaneNormal * m_ClipPlaneDistance;
+        glm::mat4 translation = glm::translate(glm::mat4(1.0f), position);
+        
+        return translation * rotation;
+    }
+    
+    void UpdateCamera(Hazel::Timestep ts)
+    {
+        // 鼠标右键旋转相机
+        if (Hazel::Input::IsMouseButtonPressed(1)) // 右键
+        {
+            auto [x, y] = Hazel::Input::GetMousePosition();
+            
+            if (!m_IsRotating)
+            {
+                m_IsRotating = true;
+                m_LastMouseX = x;
+                m_LastMouseY = y;
+            }
+            else
+            {
+                float deltaX = (x - m_LastMouseX) * m_CameraRotateSpeed * 0.1f;
+                float deltaY = (y - m_LastMouseY) * m_CameraRotateSpeed * 0.1f;
+                
+                m_CameraYaw += deltaX;
+                m_CameraPitch -= deltaY;
+                
+                // 限制俯仰角
+                if (m_CameraPitch > 89.0f) m_CameraPitch = 89.0f;
+                if (m_CameraPitch < -89.0f) m_CameraPitch = -89.0f;
+                
+                m_LastMouseX = x;
+                m_LastMouseY = y;
+                
+                UpdateCameraPosition();
+            }
+        }
+        else
+        {
+            m_IsRotating = false;
+        }
+        
+        // 滚轮缩放（需要在 Event 中处理，这里简化为键盘）
+        if (Hazel::Input::IsKeyPressed(static_cast<int>(HZ_KEY_Q)))
+        {
+            m_CameraDistance -= 2.0f * ts;
+            if (m_CameraDistance < 1.0f) m_CameraDistance = 1.0f;
+            UpdateCameraPosition();
+        }
+        if (Hazel::Input::IsKeyPressed(static_cast<int>(HZ_KEY_E)))
+        {
+            m_CameraDistance += 2.0f * ts;
+            if (m_CameraDistance > 20.0f) m_CameraDistance = 20.0f;
+            UpdateCameraPosition();
+        }
+    }
+    
+    void UpdateCameraPosition()
+    {
+        // 球坐标转换为笛卡尔坐标
+        float yawRad = glm::radians(m_CameraYaw);
+        float pitchRad = glm::radians(m_CameraPitch);
+        
+        m_CameraPosition.x = m_CameraDistance * cos(pitchRad) * cos(yawRad);
+        m_CameraPosition.y = m_CameraDistance * sin(pitchRad);
+        m_CameraPosition.z = m_CameraDistance * cos(pitchRad) * sin(yawRad);
+        
+        m_Camera.SetPosition(m_CameraPosition);
+        m_Camera.LookAt(glm::vec3(0.0f));
+    }
+
+private:
+    Hazel::ShaderLibrary m_ShaderLibrary;
+    Hazel::Ref<Hazel::Shader> m_CrossSectionShader;
+    Hazel::Ref<Hazel::VertexArray> m_CubeVA;
+    Hazel::Ref<Hazel::VertexArray> m_ClipPlaneVA;
+    
+    Hazel::PerspectiveCamera m_Camera;
+    glm::vec3 m_CameraPosition;
+    float m_CameraDistance = 5.0f;
+    float m_CameraYaw = -45.0f;
+    float m_CameraPitch = 30.0f;
+    float m_CameraRotateSpeed = 2.0f;
+    
+    bool m_IsRotating = false;
+    float m_LastMouseX = 0.0f;
+    float m_LastMouseY = 0.0f;
+    
+    // 剖切平面参数
+    glm::vec3 m_ClipPlaneNormal = glm::vec3(1.0f, 0.0f, 0.0f);
+    float m_ClipPlaneDistance = 0.0f;
+    bool m_EnableClipping = true;
+    bool m_ShowClipPlane = true;
+    bool m_ShowCrossSection = true;
+    
+    glm::vec3 m_CubeColor = glm::vec3(0.3f, 0.6f, 0.9f);
+    glm::vec3 m_CrossSectionColor = glm::vec3(1.0f, 0.8f, 0.2f);
+};
+
 class Sandbox : public Hazel::Application
 {
 public:
     Sandbox()
     {
         // PushLayer(new ExampleLayer());
-        PushLayer(new BrushLayer());
+        // PushLayer(new BrushLayer());
+        PushLayer(new CrossSectionLayer());
     }
 
     ~Sandbox()

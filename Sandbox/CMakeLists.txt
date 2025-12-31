@@ -10,9 +10,11 @@ add_executable(Sandbox ${SANDBOX_SOURCES})
 target_link_libraries(Sandbox PRIVATE Hazel)
 
 # 为 Sandbox 目标添加编译选项
-target_compile_options(Sandbox PRIVATE
-    /utf-8  # 启用 UTF-8 编码支持
-)
+if(MSVC)
+    target_compile_options(Sandbox PRIVATE /utf-8)  # 启用 UTF-8 编码支持
+else()
+    target_compile_options(Sandbox PRIVATE -finput-charset=UTF-8 -fexec-charset=UTF-8)
+endif()
 
 # 包含目录
 target_include_directories(Sandbox PRIVATE
